@@ -1,15 +1,6 @@
 import allowCors from '../helpers/allowCors';
 import nodemailer from 'nodemailer';
 
-const wedosSettings = {
-  host: 'smtp-197158.m58.wedos.net',
-  port: 587,
-  secure: false,
-  auth: {
-    user: 'dominik@tomczik.cz',
-    pass: 'Fa2f7wi9-',
-  },
-};
 const parsSettings = {
   host: 'mail2.parsdecin.cz',
   port: 587,
@@ -26,7 +17,7 @@ const parsSettings = {
 
 const message = {
   from: 'kopirka@parsdecin.cz',
-  to: `pars@abc.cz`,
+  to: `dominik.tomcik23@gmail.com`,
   subject: `New message`,
   text: 'Lorem ipsum',
 };
