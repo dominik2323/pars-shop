@@ -1,0 +1,64 @@
+html
+  head
+    title Potvrzení o objednávce
+    style
+      include template.css
+  body
+    div.main
+      table.wrapper
+        tbody
+          tr
+            td.wrapper__header 
+              img(src="https://pars-shop-server-pars.parsdecin.vercel.app/pars-shop-logo.png", alt="PARS Shop")
+              h1 #{header}
+              p #{perex}
+          tr
+            td.wrapper__body
+              h2 #{body_header}
+              each val in product_data
+                table.products
+                  tbody
+                    tr.products__header
+                      td(colspan='2')
+                        p Produkt
+                    tr.products__body
+                      td(colspan='2')
+                        p.b #{val.product_name}
+                        p #{val.product_perex}
+                    tr.products__header
+                      td
+                        p Počet kusů
+                      td
+                        p Rozměr [#{val.unit}]
+                    tr.products__body
+                      td
+                        p.b #{val.no}
+                      td.bl
+                        p.b #{val.dimensions}
+              h2 #{customer_header}
+              table.data
+                tbody
+                  tr(valign='top')
+                    td.data__personal
+                      p.b #{customer_name}
+                      each val in customer_data
+                        p=val 
+                    td.data__space
+                    td.data__note
+                      p #{customer_note}
+      if displayFooter
+        table(class='footer wrapper')
+          tbody
+            tr
+              td
+                h2 S přáním hezkého dne,<br />Tým PARS
+            tr.footer__space
+            tr(valign='bottom')
+              td 
+                p +420 775 456 789
+                p obchod@parsdecin.cz
+              td
+                a(class='b tar red') www.pars-sklad.cz
+        p.disclaimer Na tento e-mail prosím neodpovídejte, je automaticky generovaný.
+
+

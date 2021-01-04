@@ -1,21 +1,44 @@
-import sgMail from '@sendgrid/mail';
-import { MailDataRequired } from '@sendgrid/helpers/classes/mail';
+import nodemailer from "nodemailer";
 
-export function sendEmail({
-  to,
-  subject,
-  html,
-  attachments,
-}: Partial<MailDataRequired>) {
-  //@ts-ignore
-  // TODO: extract vercel vars to env vars. now the vars are global and not only for the specific project
-  sgMail.setApiKey(process.env.SG_API_KEY);
+const wedosSettings = {
+  host: "smtp-197158.m58.wedos.net",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "dominik@tomczik.cz",
+    pass: "Fa2f7wi9-",
+  },
+};
 
-  return sgMail.send({
-    to,
-    from: `eshop@pars-shop.cz`,
-    subject,
-    html,
-    attachments,
-  });
+const parsSettings = {
+  host: "mail2.parsdecin.cz",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "eshop@parsdecin.local",
+    pass: "ParsDecin2021**",
+    // user: "kopirka@parsdecin.local",
+    // pass: "ParsDecin01",
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+};
+
+
+function createMailer(message: {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+}): Promise<any> {
+  const transporter = nodemailer.createTransport(parsSettings);
+
+  return new Promise((res, rej) =>
+    transporter.sendMail(message, (err, info) =>
+      err ? rej({ err }) : res({ info })
+    )
+  );
 }
+
+export default createMailer;

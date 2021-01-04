@@ -12,6 +12,9 @@ export default {
     errors: {
       name: 'Prosím zadejte své jméno',
       companyName: 'Prosím zadejte název společnosti',
+      street: 'Nesprávně zadaná adresa',
+      city: 'Nesprávně zadané město',
+      postal_code: 'Nesprávně zadané PSČ',
       email: 'Nesprávně zadaný e-mail',
       dic: 'Nesprávně zadaný DIČ',
       ico: 'Nesprávně zadané IČO',

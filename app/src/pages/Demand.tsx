@@ -1,18 +1,17 @@
+import axios from 'axios';
+import { Field, Form, Formik } from 'formik';
 import React from 'react';
 import { useCookies } from 'react-cookie';
-import axios from 'axios';
-
-import View from '../components/View';
-import { DataProvider } from '../hocs/dataContext';
-import Button from '../components/Button';
-import { Form as form, Field, Formik, Form } from 'formik';
-import FieldGroup from '../components/FieldGroup';
-import strings from '../../helpers/strings';
-import TextInput from '../components/TextInput';
-import Cart from '../components/Cart';
-import Link from '../components/Link';
 import { absoluteUrl } from '../../helpers/absoluteUrl';
 import { getShopItemByVarioId } from '../../helpers/getShopItemByVarioId';
+import strings from '../../helpers/strings';
+import Button from '../components/Button';
+import Cart from '../components/Cart';
+import FieldGroup from '../components/FieldGroup';
+import Link from '../components/Link';
+import TextInput from '../components/TextInput';
+import View from '../components/View';
+import { DataProvider } from '../hocs/dataContext';
 
 interface Props {}
 
@@ -26,6 +25,9 @@ function validate(values) {
     email,
     ico,
     phone,
+    street,
+    city,
+    postal_code,
   } = strings.demandForm.errors;
   // name validation
   if (values.name.length === 0) {
@@ -50,12 +52,28 @@ function validate(values) {
   }
 
   // ico & dic validation
-  if (isNaN(values.ico)) {
+  if (!/^[0-9]{8,12}$/i.test(values.ico)) {
     errors['ico'] = ico;
   }
-  // TODO: include CZ before the number
-  if (isNaN(values.dic)) {
+
+  if (!/^[A-Za-z]{2}[0-9]{8,12}$/i.test(values.dic)) {
     errors['dic'] = dic;
+  }
+
+  if (!/\d{3} ?\d{2}/.test(values.postal_code)) {
+    errors['postal_code'] = postal_code;
+  }
+
+  if (
+    !/^(.*[^0-9]+) (([1-9][0-9]*)\/)?([1-9][0-9]*[a-cA-C]?)$/.test(
+      values.street
+    )
+  ) {
+    errors['street'] = street;
+  }
+
+  if (!/^[^0-9]*$/i.test(values.city)) {
+    errors['city'] = city;
   }
 
   // check cart items for errors
@@ -83,7 +101,7 @@ function validate(values) {
 
 const Demand: React.FC<Props> = () => {
   const [varioIds, setVarioIds] = React.useState([]);
-  const { shopItemsVariants } = React.useContext(DataProvider);
+  const { shopItemsVariants, shopItems } = React.useContext(DataProvider);
   const [cookies, setCookies, removeCookies] = useCookies();
 
   React.useEffect(() => {
@@ -99,13 +117,18 @@ const Demand: React.FC<Props> = () => {
     window.updateDemandBadge();
   };
 
+  console.log({ shopItems });
+
   const dummyFormData = {
     name: 'Jan Novák',
     company: 'Firma',
-    email: 'novak@firma.cz',
+    street: 'Obilní trh 4',
+    city: 'Brno',
+    postal_code: '602 00',
+    email: 'dominik.tomcik23@gmail.com',
     phone: '+420 775 337 604',
     ico: '12367890',
-    dic: '12345890',
+    dic: 'CZ12345890',
     note: 'Lorem ipsum dolor sit amet',
   };
 
@@ -146,24 +169,35 @@ const Demand: React.FC<Props> = () => {
               }}
               onSubmit={(values, actions) => {
                 const apiUrl = absoluteUrl(`localhost:3000`);
+                actions.setSubmitting(true)
                 axios
                   .post(
-                    `${apiUrl}/api/send-demand`,
+                    `${apiUrl}/api/sender`,
                     Object.assign(
                       {},
                       {
                         values: {
                           ...values,
                           items: Object.keys(values.items).map((varioId) => {
-                            const { unit } = getShopItemByVarioId(
+                            const {
+                              unit,
+                              shopItemId: shopItemIdFromVariants,
+                              dimensions,
+                            } = getShopItemByVarioId(
                               shopItemsVariants,
                               varioId
+                            );
+                            const { name } = shopItems.find(
+                              ({ shopItemId }) =>
+                                shopItemId === shopItemIdFromVariants
                             );
                             return {
                               dimensions: values.items[varioId].dimensions,
                               no: values.items[varioId].no,
                               varioId: varioId,
                               unit: unit,
+                              product_name: name,
+                              product_perex: dimensions,
                             };
                           }),
                         },
@@ -173,6 +207,7 @@ const Demand: React.FC<Props> = () => {
                   .then((res) => {
                     if (res.status === 200) {
                       actions.resetForm();
+                      actions.setSubmitting(false)
                       removeCookies('parsCart');
                       // @ts-ignore
                       window.updateDemandBadge();
@@ -181,7 +216,7 @@ const Demand: React.FC<Props> = () => {
                   });
               }}
             >
-              {() => (
+              {({isSubmitting}) => (
                 <Form className={`form`}>
                   {/* <h2>Produkty</h2> */}
                   <Cart varioIds={varioIds} removeItem={removeItem} />
@@ -196,6 +231,15 @@ const Demand: React.FC<Props> = () => {
                   </FieldGroup>
                   <FieldGroup>
                     <Field label={`Firma`} name={'company'} as={TextInput} />
+                  </FieldGroup>
+                  <FieldGroup>
+                    <Field
+                      label={`Ulice a č.p.`}
+                      name={`street`}
+                      as={TextInput}
+                    />
+                    <Field label={`Město`} name={`city`} as={TextInput} />
+                    <Field label={`PSČ`} name={`postal_code`} as={TextInput} />
                   </FieldGroup>
                   <FieldGroup>
                     <Field label={`E-mail`} name={'email'} as={TextInput} />
@@ -224,7 +268,7 @@ const Demand: React.FC<Props> = () => {
                     />
                   </FieldGroup>
                   <Button type={`submit`} className={`btn--primary`}>
-                    Odeslat
+                    {isSubmitting ? `Odesílání` : `Odeslat`}
                   </Button>
                 </Form>
               )}

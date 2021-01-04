@@ -14,5 +14,6 @@ export function genCSV(input: Array<object>, filename: string) {
     filename,
     content: buffer.toString(`base64`),
     contentType: 'text/csv',
+    encoding: `base64`
   };
 }
