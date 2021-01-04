@@ -10,12 +10,16 @@
   },
   "routes": [
     {
-      "src": "/api/send-demand",
+      "src": "/api/sender",
       "dest": "/api/sender.ts"
     },
     {
       "src": "/api/data",
       "dest": "api/data.ts"
+    },
+    {
+      "src": "/.*",
+      "status": 404 
     }
   ]
 }
